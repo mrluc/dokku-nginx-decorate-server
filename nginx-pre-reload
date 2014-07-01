@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# approaches used come directly from 2 plugins:
+# 1. dokku-nginx-vhosts-custom-configuration
+# 2. dokku-custom-domains 
+
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+APP="$1";
+
+
+# First,
+#   - if certain env var exists,
+#     - ensure a custom nginx conf directory exists
+#     - copy specified file out of a built app into the custom directory
+
+if [ ! -f "$DOKKU_ROOT/$APP/ENV" ]; then
+    exit 0;
+fi
+set +eo pipefail;
+$(cat $DOKKU_ROOT/$APP/ENV | grep 'NGINX_SERVER_DECORATION=')
+set -eo pipefail;
+if [ "$NGINX_SERVER_DECORATION" == "" ]; then
+    exit 0;
+fi
+if [ ! -d "$DOKKU_ROOT/$APP/nginx.conf.d/" ]; then
+    mkdir "$DOKKU_ROOT/$APP/nginx.conf.d/"
+fi
+docker run -i -a stdout dokku/$APP cat /app/$NGINX_SERVER_DECORATION > $DOKKU_ROOT/$APP/nginx.conf.d/$NGINX_SERVER_DECORATION
+
+
+# Second,
+#   - modify the generated nginx file with sed
+#     (in this case to add an include)
+
+# cross-platform line break approach 
+#  (mac os can have troubles if line break isn't first thing in replacement)
+lf=$'\n';
+sed -i "s|.*location.*\/[[:space:]]| include $DOKKU_ROOT/$APP/nginx.conf.d/*.conf; \\$lf &|g" $DOKKU_ROOT/$APP/nginx.conf.d/$NGINX_SERVER_DECORATION
