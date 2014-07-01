@@ -5,6 +5,14 @@
 
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 APP="$1";
+# handle setups with different docker index usernames, in case you
+# aren't using 'dokku'
+set +eo pipefail;
+$(cat $DOKKU_ROOT/$APP/ENV | grep 'DOCKER_USERNAME=')
+set -eo pipefail;
+if [ "$DOCKER_USERNAME" == "" ]; then
+    DOCKER_USERNAME = "dokku"
+fi
 
 
 # First,
@@ -24,7 +32,9 @@ fi
 if [ ! -d "$DOKKU_ROOT/$APP/nginx.conf.d/" ]; then
     mkdir "$DOKKU_ROOT/$APP/nginx.conf.d/"
 fi
-docker run -i -a stdout dokku/$APP cat /app/$NGINX_SERVER_DECORATION > $DOKKU_ROOT/$APP/nginx.conf.d/$NGINX_SERVER_DECORATION
+
+
+docker run -i -a stdout $DOCKER_USERNAME/$APP cat /app/$NGINX_SERVER_DECORATION > $DOKKU_ROOT/$APP/nginx.conf.d/$NGINX_SERVER_DECORATION
 
 
 # Second,
