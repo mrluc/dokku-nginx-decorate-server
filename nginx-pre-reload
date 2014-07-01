@@ -11,6 +11,7 @@ set +eo pipefail;
 $(cat $DOKKU_ROOT/$APP/ENV | grep 'DOCKER_USERNAME=')
 set -eo pipefail;
 if [ "$DOCKER_USERNAME" == "" ]; then
+    echo $DOCKER_USERNAME
     DOCKER_USERNAME = "dokku"
 fi
 
@@ -44,4 +45,4 @@ docker run -i -a stdout $DOCKER_USERNAME/$APP cat /app/$NGINX_SERVER_DECORATION 
 # cross-platform line break approach 
 #  (mac os can have troubles if line break isn't first thing in replacement)
 lf=$'\n';
-sed -i "s|.*location.*\/[[:space:]]| include $DOKKU_ROOT/$APP/nginx.conf.d/*.conf; \\$lf &|g" $DOKKU_ROOT/$APP/nginx.conf.d/$NGINX_SERVER_DECORATION
+sed -i "s|.*location.*\/[[:space:]]| include $DOKKU_ROOT/$APP/nginx.conf.d/*.conf; \\$lf &|g" $DOKKU_ROOT/$APP/nginx.conf
