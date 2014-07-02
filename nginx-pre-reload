@@ -5,6 +5,7 @@
 
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 APP="$1";
+DOCKER_USERNAME="";
 if [ ! -f "$DOKKU_ROOT/$APP/ENV" ]; then
     exit 0;
 fi
@@ -15,7 +16,7 @@ set +eo pipefail;
 $(cat $DOKKU_ROOT/$APP/ENV | grep 'DOCKER_USERNAME=')
 set -eo pipefail;
 if [ "$DOCKER_USERNAME" == "" ]; then
-    DOCKER_USERNAME = "dokku"
+    DOCKER_USERNAME = "dokku";
 fi
 
 
