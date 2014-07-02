@@ -16,7 +16,7 @@ set +eo pipefail;
 $(cat $DOKKU_ROOT/$APP/ENV | grep 'DOCKER_USERNAME=')
 set -eo pipefail;
 if [ "$DOCKER_USERNAME" == "" ]; then
-    DOCKER_USERNAME = "dokku";
+    DOCKER_USERNAME="dokku";
 fi
 
 
