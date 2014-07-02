@@ -5,6 +5,10 @@
 
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 APP="$1";
+if [ ! -f "$DOKKU_ROOT/$APP/ENV" ]; then
+    exit 0;
+fi
+
 # handle setups with different docker index usernames, in case you
 # aren't using 'dokku'
 set +eo pipefail;
@@ -21,9 +25,6 @@ fi
 #     - ensure a custom nginx conf directory exists
 #     - copy specified file out of a built app into the custom directory
 
-if [ ! -f "$DOKKU_ROOT/$APP/ENV" ]; then
-    exit 0;
-fi
 set +eo pipefail;
 $(cat $DOKKU_ROOT/$APP/ENV | grep 'NGINX_SERVER_DECORATION=')
 set -eo pipefail;
@@ -46,3 +47,6 @@ docker run -i -a stdout $DOCKER_USERNAME/$APP cat /app/$NGINX_SERVER_DECORATION 
 #  (mac os can have troubles if line break isn't first thing in replacement)
 lf=$'\n';
 sed -i "s|.*location.*\/[[:space:]]| include $DOKKU_ROOT/$APP/nginx.conf.d/*.conf; \\$lf &|g" $DOKKU_ROOT/$APP/nginx.conf
+
+# Actually, this should probably be its own little plugin that just
+# adds this support for includes in that directory! Cool, more granular.
